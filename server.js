@@ -7,6 +7,15 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const config = require('config');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
+
+// Connect mongoose
+mongoose.Promise = global.Promise;
+mongoose.connect("mongodb://admin:admin@ds115411.mlab.com:15411/notes-bot/users");
+mongoose.connection.on('error', console.error.bind(console, 'mongoose database connection error.'));
+mongoose.connection.on('open', function() {
+  console.log('Database connected successfully');
+});
 
 // Get our API routes
 const api = require('./server/routes/api');
