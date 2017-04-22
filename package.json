@@ -29,6 +29,7 @@
     "path": "^0.12.7",
     "request": "^2.81.0",
     "rxjs": "^5.1.0",
+    "uuid": "^3.0.1",
     "zone.js": "^0.8.4"
   },
   "devDependencies": {
