@@ -9,6 +9,7 @@ const config = require('config');
 const crypto = require('crypto');
 
 // Get our API routes
+const api = require('./server/routes/api');
 const webhook = require('./server/routes/webhook');
 
 const app = express();
@@ -32,6 +33,7 @@ if (!(APP_SECRET)) {
 }
 
 // Set our api routes
+app.use('/api', api);
 app.use('/webhook', webhook);
 
 // Serve index.html page from the dist folder
