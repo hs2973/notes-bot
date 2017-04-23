@@ -4,7 +4,6 @@ var mongoose = require("mongoose"),
 		Schema = mongoose.Schema;
 
 var noteSchema = new Schema({
-	id: { type: Number, required: true },
 	title: { type: String, default: 'Untitled' },
 	body: { type: String, required: true },
   author: { type: String, required: true },
@@ -13,8 +12,7 @@ var noteSchema = new Schema({
 });
 
 noteSchema.pre('save', function (next) {
-  console.log("Note saved: " + this);
-
+  
   // get current data
   var currentDate = new Date();
 

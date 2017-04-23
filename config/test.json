@@ -4,5 +4,5 @@
   "validationToken": "life-is-beautiful",
   "serverURL": "https://cce34afe.ngrok.io",
   "apiAiAccessToken": "a167a04a52cc4e429386cf705d84ae03",
-  "dbHost": "mongodb://admin:admin@ds115411.mlab.com:15411/notes-bot"
+  "dbHost": "mongodb://127.0.0.1:27017/notes-bot"
 }

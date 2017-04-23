@@ -8,14 +8,21 @@ var userSchema = new Schema({
 	first_name: String,
 	last_name: String,
 	email: String,
-	createdAt: { type: Date, default: Date.now }
+	createdAt: { type: Date, default: Date.now },
+	updatedAt: { type: Date }
 });
 
 userSchema.pre('save', function (next) {
 
-	if (!this.createdAt) {
-		this.createdAt = new Date();
-	}
+	// get current data
+  var currentDate = new Date();
+
+  // change updateAt field to currentDate
+  this.updatedAt = currentDate;
+
+  if (!this.createdAt) {
+  	this.createdAt = currentDate;
+  }
 
 	next();
 });

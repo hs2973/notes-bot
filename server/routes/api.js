@@ -10,13 +10,14 @@ const axios = require('axios');
 const API = 'https://jsonplaceholder.typicode.com';
 
 var User = require('../models/User');
+var Note = require('../models/Note');
 
 /* GET api listing. */
 router.get('/', (req, res) => {
   res.send('api works');
 });
 
-// Get user
+// Get a single user
 var getUser = function(id, res, callback) {
   
   if (!id) {
@@ -36,96 +37,138 @@ var getUser = function(id, res, callback) {
   });
 };
 
-// Get a single note with a specific id
-router.get('/note/:id', (req, res) => {
-  var id = req.params.id;
+/*=================================
+=            Users API            =
+=================================*/
 
-  getUser(123, res, function(user) {
+/**
+ *
+ * GET /users
+ * Should return all the users in the database
+ */
+router.get('/users', (req, res) => {
+  User.find({}, function(err, users) {
+    if (err) res.send(err);
 
-    user.notes.forEach(function(note) {
-      if (note.id == id) {
-        res.status(200).json(note);
-        return;
-      }
-    });
-
+    res.json(users);
   });
-
 });
 
-// Get all notes
-router.get('/notes', (req, res) => {
+/**
+ *
+ * GET /user/:id
+ * Should return a user with a specific id
+ */
+router.get('/user/:id', (req, res) => {
+  User.findById(req.params.id, function(err, user) {
+    if (err) res.send(err);
 
-  getUser(123, res, function(user) {
-    res.status(200).json(user.notes);
+    res.json(user);
   });
-  
 });
 
-// Post a note
-router.post('/notes', (req, res) => {
-
-  // check if the body is empty
-  if (!req.body.body) {
-    res.status(404).send( { success: false, message: 'Empty note body.'});
-    return;
-  }
-
-  getUser(req.body.author, res, function(user) {
-    
-    // create a note
-    var note = {
-      title: req.body.title,
-      body: req.body.body
-    };
-
-    // add the note to users.notes collection
-    if (user.notes.length === 0) {
-      note.id = 1;
-    } else {
-      note.id = user.notes[user.notes.length - 1].id + 1;
-    }
-
-    user.notes.push(note);
-
-    // save the user
-    user.save(function(err) {
-      if (err) {
-        res.status(500).send(err);
-        return;
-      }
-
-      res.status(200).json({
-        success: true,
-        message: 'Note posted successfully'
-      });
-    });
-  });
-
-});
-
-router.post('/signup', (req, res) => {
+/**
+ *
+ * POST /users
+ * Should create a new user
+ */
+router.post('/users', (req, res) => {
 
   var user = new User({
     first_name: req.body.first_name,
     last_name: req.body.last_name,
     facebook_id: req.body.facebook_id,
-    email: req.body.email,
-    notes: []
+    email: req.body.email
   });
 
-  console.log(user);
+  // check if a user already exists or not
+  // if the user exists, do not create a new account but instead update it.
+  User.findOne({ facebook_id: req.body.facebook_id }, function(err, user) {
+    if (err) res.send(err);
 
-  user.save(function (err) {
-    if (err) {
-      console.log(err);
-      res.send(err);
+    if (user) {
+      // update existing user
+      user.first_name = (req.body.first_name != null) ? req.body.first_name : user.first_name;
+      user.last_name = (req.body.last_name != null) ? req.body.last_name : user.last_name;
+      user.email = (req.body.email != null) ? req.body.email : user.email;
+    } 
+    else {
+      // create a new user  
+      user = new User({
+        facebook_id: req.body.facebook_id,
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        email: req.body.email
+      });
     }
 
-    console.log('user created successfully');
-    res.status(200).json({ success: true, message: 'User created successfully.'});
+    user.save(function (err) {
+      if (err) res.send(err);
+
+      res.json({ success: true, message: 'User created successfully.'});
+    });
+
+  });
+});
+
+/*=====  End of Users API  ======*/
+
+
+
+/*=================================
+=            Notes API            =
+=================================*/
+
+/**
+ *
+ * GET /notes
+ * Should return all notes
+ */
+router.get('/notes', (req, res) => {
+  Note.find({}, function(err, notes) {
+    if (err) res.send(err);
+
+    res.json(notes);
+  });
+});
+
+/**
+ *
+ * GET /note/:id
+ * Should return a note with a specific id
+ */
+router.get('/note/:id', (req, res) => {
+  Note.findById(req.params.id, function(err, note) {
+    if (err) res.send(err);
+
+    res.json(note);
+  });
+});
+
+
+/**
+ *
+ * POST /notes
+ * Should create a new note
+ */
+router.post('/notes', (req, res) => {
+
+  var note = new Note({
+    title: req.body.title,
+    body: req.body.body,
+    author: req.body.author
+  });
+
+  note.save(function (err) {
+    if (err) res.send(err);
+
+    res.json({ success: true, message: 'Note created successfully.'});
   });
 
 });
+
+/*=====  End of Notes API  ======*/
+
+
 
 module.exports = router;

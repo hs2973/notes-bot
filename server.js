@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 
 // Connect mongoose
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://admin:admin@ds115411.mlab.com:15411/notes-bot/users");
+mongoose.connect(config.get('dbHost'));
 mongoose.connection.on('error', console.error.bind(console, 'mongoose database connection error.'));
 mongoose.connection.on('open', function() {
   console.log('Database connected successfully');
