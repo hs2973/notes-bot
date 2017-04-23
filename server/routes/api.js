@@ -172,7 +172,7 @@ router.post('/notes', (req, res) => {
 /**
  *
  * DELETE /note/:id
- * Should a note with specific id
+ * Should delete a note with specific id
  */
 router.delete('/note/:id', (req, res) => {
 
@@ -186,6 +186,32 @@ router.delete('/note/:id', (req, res) => {
   });
 
 });
+
+/**
+ *
+ * PUT /note/:id
+ * Should update a note with specific id
+ */
+router.put('/note/:id', (req, res) => {
+
+ Note.findById({_id: req.params.id}, (err, note) => {
+    if(err) {
+      res.send(err);
+      return;
+    }
+
+    Object.assign(note, req.body).save((err, book) => {
+      if(err) {
+        res.send(err);
+        return;
+      }
+
+      res.json({ success: true, message: "Note successfully updated!" });
+    }); 
+  });
+
+});
+
 /*=====  End of Notes API  ======*/
 
 

@@ -135,4 +135,48 @@ describe('Notes', () => {
     });
   });
 
+	/**
+	 * Test PUT note/:id
+	 */
+	 describe('/PUT note/:id', () => {
+    it('it should UPDATE a note with given id', (done) => {
+      let note = new Note({
+        title: "Sample title",
+        body: "Sample body",
+        author: "123"
+      });
+
+      let update = {
+      	title: "Updated Title",
+      	body: "Updated Body"
+      }
+
+      note.save((err, note) => {
+          chai.request(server)
+          .put('/api/note/' + note.id)
+          .send(update)
+          .end((err, res) => {
+              res.should.have.status(200);
+		          res.body.should.be.a('object');
+		          res.body.should.have.property('success').eql(true);
+
+		          // request the note with above id and check its contents
+		          chai.request(server)
+		          		.get('/api/note/' + note.id)
+		          		.end((err, res) => {
+		          			res.should.have.status(200);
+			              res.body.should.be.a('object');
+			              res.body.should.have.property('title').eql(update.title);
+			              res.body.should.have.property('body').eql(update.body);
+			              res.body.should.have.property('author');
+			              res.body.should.have.property('_id').eql(note.id);
+		          		});
+		      
+            done();
+          });
+      });
+
+    });
+  });
+
 });
