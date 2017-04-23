@@ -169,6 +169,23 @@ router.post('/notes', (req, res) => {
 
 });
 
+/**
+ *
+ * DELETE /note/:id
+ * Should a note with specific id
+ */
+router.delete('/note/:id', (req, res) => {
+
+  Note.remove({_id : req.params.id}, (err, result) => {
+    if (err) {
+      res.send(err);
+      return;
+    }
+
+    res.json({ success: true, message: "Note successfully deleted!" });
+  });
+
+});
 /*=====  End of Notes API  ======*/
 
 

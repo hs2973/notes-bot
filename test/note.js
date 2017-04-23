@@ -85,28 +85,54 @@ describe('Notes', () => {
 	 * Test GET note/:id
 	 */
   describe('/GET note/:id', () => {
-      it('it should GET a note with given id', (done) => {
-        let note = new Note({
-	        title: "Sample title",
-	        body: "Sample body",
-	        author: "123"
-	      });
-
-        note.save((err, note) => {
-            chai.request(server)
-            .get('/api/note/' + note.id)
-            .end((err, res) => {
-                res.should.have.status(200);
-                res.body.should.be.a('object');
-                res.body.should.have.property('title');
-                res.body.should.have.property('body');
-                res.body.should.have.property('author');
-                res.body.should.have.property('_id').eql(note.id);
-              done();
-            });
-        });
-
+    it('it should GET a note with given id', (done) => {
+      let note = new Note({
+        title: "Sample title",
+        body: "Sample body",
+        author: "123"
       });
+
+      note.save((err, note) => {
+          chai.request(server)
+          .get('/api/note/' + note.id)
+          .end((err, res) => {
+              res.should.have.status(200);
+              res.body.should.be.a('object');
+              res.body.should.have.property('title');
+              res.body.should.have.property('body');
+              res.body.should.have.property('author');
+              res.body.should.have.property('_id').eql(note.id);
+            done();
+          });
+      });
+
+    });
+  });
+
+  /**
+	 * Test DELETE note/:id
+	 */
+	 describe('/DELETE note/:id', () => {
+    it('it should DELETE a note with given id', (done) => {
+      let note = new Note({
+        title: "Sample title",
+        body: "Sample body",
+        author: "123"
+      });
+
+      note.save((err, note) => {
+          chai.request(server)
+          .delete('/api/note/' + note.id)
+          .end((err, res) => {
+              res.should.have.status(200);
+		          res.body.should.be.a('object');
+		          res.body.should.have.property('success').eql(true);
+		      
+            done();
+          });
+      });
+
+    });
   });
 
 });
