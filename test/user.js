@@ -23,9 +23,7 @@ describe('Users', () => {
 	});
 
 	/**
-	 *
-	 * Test the GET ROUTE
-	 *
+	 * Test the GET methods
 	 */
 	describe('/GET users', () => {
 		it ('should GET all the users', (done) => {
@@ -41,18 +39,74 @@ describe('Users', () => {
 		});
 	});
 
-	describe('/GET user/:id', () => {
-		it ('should GET a specific user with given id', (done) => {
-			chai.request(server)
-					.get('/api/user/123')
-					.end((err, res) => {
-						res.should.have.status(200);
-						res.body.should.be.a('array');
-						res.body.length.should.be.eql(0);
+	/**
+	 * Test the POST methods
+	 */
+	describe('/POST users', () => {
+    it('should not POST a user without the facebook id', (done) => {
+      let user = {
+        first_name: "John",
+        last_name: "Doe"
+      }
 
-						done();
-					});
-		});
-	});
+      chai.request(server)
+		      .post('/api/users')
+		      .send(user)
+		      .end((err, res) => {
+		          res.should.have.status(200);
+		          res.body.should.be.a('object');
+		          res.body.should.have.property('errors');
+		      
+		      done();
+      });
+    });
+
+    it('it should POST a user ', (done) => {
+      let user = {
+        first_name: "John",
+        last_name: "Doe",
+        facebook_id: "123"
+      }
+
+      chai.request(server)
+		      .post('/api/users')
+		      .send(user)
+		      .end((err, res) => {
+		          res.should.have.status(200);
+		          res.body.should.be.a('object');
+		          res.body.should.have.property('success').eql(true);
+		      
+		      done();
+      });
+    });
+  });
+
+ 	/**
+	 * Test GET user/:id
+	 */
+  describe('/GET user/:id', () => {
+      it('it should GET a user with given id', (done) => {
+        let user = new User({
+	       	first_name: "John",
+	        last_name: "Doe",
+	        facebook_id: "123"
+	      });
+
+        user.save((err, user) => {
+            chai.request(server)
+            .get('/api/user/' + user.id)
+            .end((err, res) => {
+                res.should.have.status(200);
+                res.body.should.be.a('object');
+                res.body.should.have.property('first_name');
+                res.body.should.have.property('last_name');
+                res.body.should.have.property('facebook_id');
+                res.body.should.have.property('_id').eql(user.id);
+              done();
+            });
+        });
+
+      });
+  });
 
 });

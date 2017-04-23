@@ -5,10 +5,6 @@ const mongoose = require('mongoose');
 
 const router = express.Router();
 
-// declare axios for making http requests
-const axios = require('axios');
-const API = 'https://jsonplaceholder.typicode.com';
-
 var User = require('../models/User');
 var Note = require('../models/Note');
 
@@ -103,7 +99,10 @@ router.post('/users', (req, res) => {
     }
 
     user.save(function (err) {
-      if (err) res.send(err);
+      if (err) {
+        res.send(err);
+        return;
+      }
 
       res.json({ success: true, message: 'User created successfully.'});
     });
@@ -160,7 +159,10 @@ router.post('/notes', (req, res) => {
   });
 
   note.save(function (err) {
-    if (err) res.send(err);
+    if (err) { 
+      res.send(err);
+      return;
+    }
 
     res.json({ success: true, message: 'Note created successfully.'});
   });
