@@ -4,6 +4,7 @@ var mongoose = require("mongoose"),
 		Schema = mongoose.Schema;
 
 var noteSchema = new Schema({
+	id: { type: Number, required: true },
 	title: { type: String, default: 'Untitled' },
 	body: { type: String, required: true },
 	createdAt: { type: Date, default: Date.now },

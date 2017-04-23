@@ -17,30 +17,53 @@ router.get('/', (req, res) => {
 });
 
 // Get user
-var getUser = function(id) {
-  console.log(id);
+var getUser = function(id, res, callback) {
+  
+  if (!id) {
+    res.status(404).send( { success: false, message: "Empty user id."});
+    return;
+  }
 
-  User.find({ facebook_id: '123' }, function (err, user){
+  User.find({ facebook_id: id.toString() }, function (err, users){
     if (err) throw err;
 
-    return user;
+    if(users.length !== 1) {
+      res.status(404).send({ success: false, message: 'No user found!' });
+      return;
+    }
+
+    callback(users[0]);
   });
 };
 
-// Get all posts
-router.get('/notes', (req, res) => {
-  // Get posts from the mock api
-  // This should ideally be replaced with a service that connects to MongoDB
-  axios.get(`${API}/posts`)
-    .then(posts => {
-      res.status(200).json(posts.data);
-    })
-    .catch(error => {
-      res.status(500).send(error)
+// Get a single note with a specific id
+router.get('/note/:id', (req, res) => {
+  var id = req.params.id;
+
+  getUser(123, res, function(user) {
+
+    user.notes.forEach(function(note) {
+      if (note.id == id) {
+        res.status(200).json(note);
+        return;
+      }
     });
+
+  });
+
 });
 
-router.post('/note', (req, res) => {
+// Get all notes
+router.get('/notes', (req, res) => {
+
+  getUser(123, res, function(user) {
+    res.status(200).json(user.notes);
+  });
+  
+});
+
+// Post a note
+router.post('/notes', (req, res) => {
 
   // check if the body is empty
   if (!req.body.body) {
@@ -48,27 +71,24 @@ router.post('/note', (req, res) => {
     return;
   }
 
-  User.find({ facebook_id: req.body.id.toString() }, function (err, users){
-    if (err) throw err;
-
-    // check if the user is valid
-    if (users.length !== 1) {
-      res.status(404).send({ success: false, message: 'No user found!'});
-      return;
-    }
-
-    var user = users[0];
-
-    console.log(user);
-
+  getUser(req.body.author, res, function(user) {
+    
+    // create a note
     var note = {
       title: req.body.title,
       body: req.body.body
     };
 
-    console.log(user.notes);
+    // add the note to users.notes collection
+    if (user.notes.length === 0) {
+      note.id = 1;
+    } else {
+      note.id = user.notes[user.notes.length - 1].id + 1;
+    }
+
     user.notes.push(note);
 
+    // save the user
     user.save(function(err) {
       if (err) {
         res.status(500).send(err);
