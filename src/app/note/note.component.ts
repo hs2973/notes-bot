@@ -1,4 +1,10 @@
+import 'rxjs/add/operator/switchMap';
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
+
+import { NotesService } from '../notes.service';
+
+declare var Quill: any;
 
 @Component({
   selector: 'app-note',
@@ -6,10 +12,28 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./note.component.css']
 })
 export class NoteComponent implements OnInit {
+	note: any;
+	quill: any;
 
-  constructor() { }
+  constructor(
+  	private notesService: NotesService,
+  	private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
+  	this.quill = new Quill('#editor', {
+  		theme: 'snow'
+  	});
+
+  	// Retrive notes form the API
+  	// Retrieve notes from the API
+    this.route.params
+      .switchMap((params: Params) => this.notesService.getNote(params['id']))
+      .subscribe(note => {
+        this.note = note;
+
+        this.quill.setText(this.note.body);
+      });
   }
 
 }

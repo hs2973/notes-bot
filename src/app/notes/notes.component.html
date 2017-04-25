@@ -3,7 +3,7 @@
 	  <div class="card card-block">
 	    <h4 class="card-title">{{ note.title }}</h4>
 	    <p class="card-text">{{note.body}}</p>
-	    <a href="#" class="card-link">Edit</a>
+	    <a routerLink="/note/{{ note._id }}" class="card-link">Edit</a>
 	    <a href="#" class="card-link">Delete</a>
 	  </div>
 	</div>

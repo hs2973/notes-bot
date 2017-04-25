@@ -23,6 +23,10 @@ const ROUTES = [
   {
     path: 'notes',
     component: NotesComponent
+  },
+  {
+    path: 'note/:id',
+    component: NoteComponent
   }
 ];
 
