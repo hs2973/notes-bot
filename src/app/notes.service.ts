@@ -19,4 +19,10 @@ export class NotesService {
   	return this.http.get('api/note/' + id)
   		.map(res => res.json());
   }
+
+  // Delete a note with specific ID
+  deleteNote(id: String) {
+    return this.http.delete('api/note/' + id)
+      .map(res => res.json());
+  }
 }
