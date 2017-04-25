@@ -13,3 +13,7 @@ body {
 .main {
 	margin-top: 20px;
 }
+
+#quill-container .ql-editor {
+  font-size: 18px;
+}

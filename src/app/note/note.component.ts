@@ -21,9 +21,17 @@ export class NoteComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-  	this.quill = new Quill('#editor', {
-  		theme: 'snow'
-  	});
+  	this.quill = new Quill('#quill-container', {
+      modules: {
+        toolbar: [
+          [{ header: [1, 2, false] }],
+          ['bold', 'italic', 'underline'],
+          ['image', 'code-block']
+        ]
+      },
+      scrollingContainer: '#scrolling-container', 
+      theme: 'bubble'
+    });
 
   	// Retrive notes form the API
   	// Retrieve notes from the API
