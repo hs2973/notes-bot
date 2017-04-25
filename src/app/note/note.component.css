@@ -6,8 +6,13 @@ body {
   height: 100%;
 }
 
-h2.title {
-	padding: 12px 15px;
+.header .title {
+	padding: 0px 15px;
+  float: left;
+}
+
+.header .btn-link {
+  float: right;
 }
 
 /* Tell Quill not to scroll */

@@ -162,6 +162,7 @@ router.post('/notes', (req, res) => {
   var note = new Note({
     title: req.body.title,
     body: req.body.body,
+    text: req.body.text,
     author: req.body.author
   });
 

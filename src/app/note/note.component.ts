@@ -40,7 +40,23 @@ export class NoteComponent implements OnInit {
       .subscribe(note => {
         this.note = note;
 
-        this.quill.setText(this.note.body);
+        this.quill.setContents(JSON.parse(this.note.body));
+      });
+  }
+
+  saveNote(note) {
+    var data = {
+      body: JSON.stringify(this.quill.getContents()),
+      text: this.quill.getText()
+    }
+
+    this.notesService.saveNote(note._id, data).subscribe(status => {
+
+        if (status.success === true) {
+          alert("Your note was successfully saved.");
+        } else {
+          alert("Some error occurred. Please try again later.");
+        }
       });
   }
 

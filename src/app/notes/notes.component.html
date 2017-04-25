@@ -3,7 +3,7 @@
 	<div class="row" *ngFor="let note of notes">
 	  <div class="card card-block">
 	    <h4 class="card-title">{{ note.title }}</h4>
-	    <p class="card-text">{{note.body}}</p>
+	    <p class="card-text">{{ note.text }}</p>
 	    <a routerLink="/note/{{ note._id }}" class="card-link">Edit</a>
 	    <a routerLink="/notes" (click)="deleteNote(note)" class="card-link">Delete</a>
 	  </div>

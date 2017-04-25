@@ -6,6 +6,7 @@ var mongoose = require("mongoose"),
 var noteSchema = new Schema({
 	title: { type: String, default: 'Untitled' },
 	body: { type: String, required: true },
+  text: { type: String }, // cleaner version of body
   author: { type: String, required: true },
 	createdAt: { type: Date, default: Date.now },
 	updatedAt: { type: Date }

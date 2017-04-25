@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { Http, Headers } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 @Injectable()
@@ -23,6 +23,17 @@ export class NotesService {
   // Delete a note with specific ID
   deleteNote(id: String) {
     return this.http.delete('api/note/' + id)
+      .map(res => res.json());
+  }
+
+  // Save a note with specific ID
+  saveNote(id: String, data: Object) {
+    let headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+
+    console.log(data);
+
+    return this.http.put('api/note/' + id, JSON.stringify(data), { headers: headers })
       .map(res => res.json());
   }
 }

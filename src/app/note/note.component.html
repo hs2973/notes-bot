@@ -1,5 +1,10 @@
 <div class="container note">
-	<h2 class="title" *ngIf="note"> {{ note.title }} </h2>
+	<div class="header">
+		<h2 class="title" *ngIf="note"> {{ note.title }} </h2>
+		<button type="button" (click)="saveNote(note)" class="btn btn-link">Save</button>
+
+		<div class="clearfix"></div>
+	</div>
 
 	<div id="scrolling-container body">
 	  <div id="quill-container">
