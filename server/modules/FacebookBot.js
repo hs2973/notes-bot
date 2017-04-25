@@ -5,6 +5,8 @@ const apiai = require('apiai');
 const uuid = require('uuid');
 const request = require('request');
 
+const noteTaker = require('./NoteTaker');
+
 // Generate a page access token for your page from the App Dashboard
 const PAGE_ACCESS_TOKEN = (process.env.MESSENGER_PAGE_ACCESS_TOKEN) ?
   (process.env.MESSENGER_PAGE_ACCESS_TOKEN) :
@@ -15,7 +17,13 @@ const APIAI_ACCESS_TOKEN = (process.env.APIAI_ACCESS_TOKEN) ?
   (process.env.APIAI_ACCESS_TOKEN) :
   config.get('apiAiAccessToken');
 
-if (!(APIAI_ACCESS_TOKEN && PAGE_ACCESS_TOKEN)) {
+// URL where the app is running (include protocol). Used to point to scripts and 
+// assets located at this address. 
+const SERVER_URL = (process.env.SERVER_URL) ?
+  (process.env.SERVER_URL) :
+  config.get('serverURL');
+
+if (!(APIAI_ACCESS_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
   console.error("Missing config values: FacebookBot.js");
   process.exit(1);
 }
@@ -28,18 +36,136 @@ if (!(APIAI_ACCESS_TOKEN && PAGE_ACCESS_TOKEN)) {
 class FacebookBot {
   constructor() {
     this.apiAiService = apiai(APIAI_ACCESS_TOKEN, {language: 'en', requestSource: "fb"});
-    this.sessionIds = new Map();
+
+    // This will store important state information about user
+    this.users = new Map();
+  }
+
+  /*
+   * Function to do some preProcessing on the sender before we process the text
+   * messages.
+   */
+  preProcess(sender) {
+    // check if the sender exists in users Map
+    if (!this.users.has(sender)) {
+      var user = {
+        sessionId: uuid.v4(),     // sessionId for apiAi service
+        // currentState: 'default'   // ['default', 'create-note', 'show-notes']
+      }
+
+      this.users.set(sender, user);
+    }
   }
 
   processText(sender, text) {
-    // Handle a text message from this sender
-    if (!this.sessionIds.has(sender)) {
-      this.sessionIds.set(sender, uuid.v4());
+    // Send the text to apiai servers to process
+    // In the future, we will want to maintain user's status and act accordingly.
+    // For example, if the user is in 'create-note' mode, we will want to save the message to the database instead
+
+    this.preProcess(sender);
+
+    if (text == 'list') {
+      var that = this;
+
+      noteTaker.getNotes(sender, 5, 'DATE_GOES_HERE', 
+        function(response) {
+          that.sendListMessage(sender, response.data);
+        },
+        function (error) {
+          console.log(error);
+        });
+
+      return;
+    } else if (text == 'quickreply') {
+
+      var sampleMessage = {
+        type: 'quick_reply',
+        text: 'Hello, I am a notes bot. I can help you take rich notes.',
+        quick_replies: [
+          {
+            content_type: 'text',
+            title: "Show me how!",
+            payload: "GET_STARTED_SHOW_ME_HOW"
+          }
+        ]
+      };
+
+      this.sendQuickReplies(sender, sampleMessage);
+
+      return;
+    } else if (text.trim().toUpperCase() === 'DONE') {
+
+      // User finished creating note
+
+      // Check if the user has a note field or not
+      if (this.users.get(sender).hasOwnProperty('note')) {
+        this.sendTextMessage(sender, "You have successfully created a note. Here is your note.");
+
+        var that = this;
+
+        this.users.get(sender).note.body.forEach(function(elem) {
+          that.sendTextMessage(sender, elem);
+        });
+
+      }
+
+      return;
+
+    } else if (text === 'button') {
+
+      // Send a button message
+      var messageData = {
+        text: 'Your new note has been created successfully.',
+        buttons: [
+          {
+            "type":"web_url",
+            "url":"https://4662608c.ngrok.io/ ",
+            "title":"Show note"
+          },
+          {
+            "type":"postback",
+            "title":"Edit",
+            "payload":"USER_DEFINED_EDIT"
+          },
+          {
+            "type":"postback",
+            "title":"Delete",
+            "payload":"USER_DEFINED_DELETE"
+          }
+        ]
+      };
+
+      this.sendButtonMessage(sender, messageData);
+      return;
     }
+
+
+    // When the user state is 'default', we want to send the requests to apiai servers
+    // to make sense of the data
+    switch (this.users.get(sender).currentState) {
+
+      case 'create-note':
+        this.users.get(sender).note.body.push(text);
+        break;
+
+      default:
+        this.sendApiAiRequest(sender, text);
+        break;
+    }
+    
+  }
+
+
+  /*
+   * Method to send request to apiai service for natural language understanding
+   * Actions are taken based on what apiai service returns
+   *
+   */
+  sendApiAiRequest(sender, text) {
 
     // Send user's text to api.ai service
     let apiaiRequest = this.apiAiService.textRequest(text, {
-      sessionId: this.sessionIds.get(sender)
+      sessionId: this.users.get(sender).sessionId
     });
 
     // Get response from api.ai
@@ -67,6 +193,40 @@ class FacebookBot {
     apiaiRequest.end();
   }
 
+  /* 
+   * Method to process the attachments
+   * @params: attachments => [attachment]
+   * https://developers.facebook.com/docs/messenger-platform/webhook-reference/message
+   */ 
+  processAttachments(sender, attachments) {
+    this.preProcess(sender);
+    this.sendTextMessage(senderID, "Message with attachment received");
+  }
+
+  /* 
+   * Method to process the postbacks
+   * @params: postback
+   * https://developers.facebook.com/docs/messenger-platform/webhook-reference/message
+   */ 
+  processPostback(sender, payload) {
+    this.preProcess(sender);
+
+    switch (payload) {
+      case 'MENU_CREATE_A_NOTE':
+        console.log(this.users.get(sender));
+        this.users.get(sender).currentState = 'create-note';
+        this.users.get(sender).note = {
+          title: null,
+          body: []
+        };
+        this.sendTextMessage(sender, "Start typing your notes. Type \'DONE\' when you are finished.");
+        break;
+
+      default:
+        this.sendTextMessage(sender, "Postback called with payload: " + payload);
+    }
+  }
+ 
   isDefined(obj) {
     if (typeof obj == 'undefined') return false;
     if (!obj) return false;
@@ -90,6 +250,95 @@ class FacebookBot {
 
 	  this.callSendAPI(messageData);
 	}
+
+  /*
+   * Send a button message using the Send API.
+   *
+   */
+  sendButtonMessage(recipientId, message) {
+    var messageData = {
+      recipient: {
+        id: recipientId
+      },
+      message: {
+        attachment: {
+          type: 'template',
+          payload: {
+            template_type: 'button',
+            text: message.text,
+            buttons: message.buttons
+          }
+        }
+      }
+    };
+    
+    this.callSendAPI(messageData);
+  }
+
+  /*
+   * Send a quick reply using the Send API.
+   *
+   */
+  sendQuickReplies(recipientId, message) {
+    var messageData = {
+      recipient: {
+        id: recipientId
+      },
+      message: {
+        text: message.text,
+        quick_replies: message.quick_replies
+      }
+    };
+
+    this.callSendAPI(messageData);
+  }
+
+  /*
+   * Send a list message using the Send API.
+   *
+   */
+  sendListMessage(recipientId, notes) {
+    var messageData = {
+      recipient: {
+        id: recipientId
+      },
+      message: {
+        attachment: {
+          type: "template",
+          payload: {
+            template_type: "list",
+            top_element_style: "compact",
+            elements: [],
+            buttons: [
+                {
+                    "title": "View More",
+                    "type": "postback",
+                    "payload": "VIEW_MORE"                        
+                }
+            ]
+          }
+        }
+      }
+    };
+
+    notes.forEach(function(note) {
+      var elem = {
+        title: note.title,
+        subtitle: note.body,
+        default_action: {
+          type: 'web_url',
+          url: 'https://4662608c.ngrok.io/note/' + note._id,
+          messenger_extensions: true,
+          webview_height_ratio: 'tall',
+          fallback_url: 'https://4662608c.ngrok.io'
+        }
+      };
+
+      messageData.message.attachment.payload.elements.push(elem);
+    });
+
+    this.callSendAPI(messageData);
+  }
 
 	/*
 	 * Call the Send API. The message data goes in the body. If successful, we'll 

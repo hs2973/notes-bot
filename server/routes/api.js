@@ -120,15 +120,22 @@ router.post('/users', (req, res) => {
 
 /**
  *
- * GET /notes
+ * GET /notes?count=NUM&from=TIME_STAMP
  * Should return all notes
  */
 router.get('/notes', (req, res) => {
-  Note.find({}, function(err, notes) {
-    if (err) res.send(err);
+  var count = req.query.count ? req.query.count : 4;
+  var from = req.query.from ? req.query.from : 0;
 
-    res.json(notes);
-  });
+  var author = '123';
+
+  Note.find({ author: author })
+      .where('createdAt').gt(new Date(from))
+      .limit(parseInt(count))
+      .exec(function(err, notes) {
+        if (err) res.send(err);
+        res.json(notes);
+      });
 });
 
 /**

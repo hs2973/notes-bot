@@ -2,7 +2,7 @@
   "appSecret": "82b12519ffd3b13f72a6357fc34d3b2b",
   "pageAccessToken": "EAALNlZCbOwnoBADUcujGZCDIkrMs52bOQZCpnfJH2BAySOqIOlbIOleGnkcr1wMeZBjr7TSmbZB5TyUBUZCPZCcf9I75b4uXyf6h1srasqjfBAC83L5b90ANsYOaFlAIqlMpkBZAguPlKKx9M3Nk9nPs2hwt1AGMEjZAYlWMSQXZCmcwZDZD",
   "validationToken": "life-is-beautiful",
-  "serverURL": "https://cce34afe.ngrok.io",
+  "serverURL": "http://localhost:5000",
   "apiAiAccessToken": "a167a04a52cc4e429386cf705d84ae03",
   "dbHost": "mongodb://admin:admin@ds115411.mlab.com:15411/notes-bot"
 }

@@ -60,6 +60,7 @@ router.post('/', function (req, res) {
       var timeOfEvent = pageEntry.time;
 
       // Iterate over each messaging event
+      // We will only handle messages and postbacks for now
       pageEntry.messaging.forEach(function(messagingEvent) {
         if (messagingEvent.message) {
           receivedMessage(messagingEvent);
@@ -123,13 +124,10 @@ function receivedMessage(event) {
   }
 
   if (messageText) {
-    // Send the text to apiai servers to process
-    // In the future, we will want to maintain user's status and act accordingly.
-    // For example, if the user is in 'create-note' mode, we will want to save the message to the database instead
     facebookBot.processText(senderID, messageText);
-
-  } else if (messageAttachments) {
-    facebookBot.sendTextMessage(senderID, "Message with attachment received");
+  } 
+  else if (messageAttachments) {
+    facebookBot.processAttachments(senderID, messageAttachments);
   }
 }
 
@@ -152,10 +150,7 @@ function receivedPostback(event) {
   console.log("Received postback for user %d and page %d with payload '%s' " + 
     "at %d", senderID, recipientID, payload, timeOfPostback);
 
-  // When a postback is called, we'll send a message back to the sender to 
-  // let them know it was successful
-  facebookBot.sendTextMessage(senderID, "Postback called");
-  facebookBot.sendTextMessage(senderID, messages[payload]);
+  facebookBot.processPostback(senderID, payload);
 }
 
 module.exports = router;
