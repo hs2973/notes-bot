@@ -10,7 +10,13 @@ export class NotesService {
   // Fetch some dummy notes from external API
   // This will be replaced by the link to the backend server api
   getAllNotes() {
-    return this.http.get('https://jsonplaceholder.typicode.com/posts')
+    return this.http.get('api/notes')
       .map(res => res.json());
+  }
+
+  // Fetch a note with specific ID
+  getNote(id: String) {
+  	return this.http.get('api/note/' + id)
+  		.map(res => res.json());
   }
 }

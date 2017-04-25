@@ -10,6 +10,7 @@ import { NotesComponent } from './notes/notes.component';
 
 // Import app services
 import { NotesService } from './notes.service';
+import { NoteComponent } from './note/note.component';
 
 
 // Define the routes
@@ -28,7 +29,8 @@ const ROUTES = [
 @NgModule({
   declarations: [
     AppComponent,
-    NotesComponent
+    NotesComponent,
+    NoteComponent
   ],
   imports: [
     BrowserModule,
