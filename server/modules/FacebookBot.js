@@ -220,7 +220,20 @@ class FacebookBot {
    */ 
   processAttachments(sender, attachments) {
     this.preProcess(sender);
-    this.sendTextMessage(senderID, "Message with attachment received");
+
+    console.log(attachments);
+
+    switch (this.users.get(sender).currentState) {
+
+      case 'create-note':
+        quill.addAttachments(this.users.get(sender).note, attachments)
+        break;
+
+      default:
+        this.sendTextMessage(sender, "Message with attachment received");
+        break;
+    }
+
   }
 
   /* 
