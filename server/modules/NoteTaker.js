@@ -34,14 +34,32 @@ class NoteTaker {
 	}
 
 	/*
-	 * Method to get a single from the database
+	 * Method to get a single note from the database
 	 * @params: owner: String, id: String, completion: Function, error: Function
 	 *
 	 */
 	getNote(owner, id, completion, error) {
 
 		// Make the get request to backend server
-		axios.get('/api/note/' + id)
+		axios.get('http://localhost:5000/api/note/' + id)
+			.then(function(response) {
+				completion(response);
+			})
+			.catch(function(err) {
+				error(err);
+			});
+
+	}
+
+	/*
+	 * Method to post note to the database
+	 * @params: owner: String, id: String, completion: Function, error: Function
+	 *
+	 */
+	postNote(data, completion, error) {
+
+		// Make the get request to backend server
+		axios.post('http://localhost:5000/api/notes', data)
 			.then(function(response) {
 				completion(response);
 			})

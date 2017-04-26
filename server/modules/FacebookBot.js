@@ -6,6 +6,7 @@ const uuid = require('uuid');
 const request = require('request');
 
 const noteTaker = require('./NoteTaker');
+const quill = require('./Quill');
 
 // Generate a page access token for your page from the App Dashboard
 const PAGE_ACCESS_TOKEN = (process.env.MESSENGER_PAGE_ACCESS_TOKEN) ?
@@ -99,13 +100,32 @@ class FacebookBot {
 
       // Check if the user has a note field or not
       if (this.users.get(sender).hasOwnProperty('note')) {
-        this.sendTextMessage(sender, "You have successfully created a note. Here is your note.");
 
         var that = this;
 
-        this.users.get(sender).note.body.forEach(function(elem) {
-          that.sendTextMessage(sender, elem);
-        });
+        // stringify note.body
+        var data = {
+          title: this.users.get(sender).note.title,
+          body: JSON.stringify(this.users.get(sender).note.body),
+          text: this.users.get(sender).note.text,
+          author: sender.toString()
+        };
+
+        noteTaker.postNote(data, 
+          function (res){
+            if (res.data.success === true) {
+              that.sendTextMessage(sender, "You have successfully created a note.");
+            } else {
+              that.sendTextMessage(sender, "Something went wrong. Your note couldn't be saved successfully.");
+            }
+          },
+          function (err){
+            console.log(err);
+            that.sendTextMessage(sender, "Something went wrong. I will get back to you later about this.");
+          });
+
+        delete this.users.get(sender).currentState;
+        delete this.users.get(sender).note;
 
       }
 
@@ -145,7 +165,7 @@ class FacebookBot {
     switch (this.users.get(sender).currentState) {
 
       case 'create-note':
-        this.users.get(sender).note.body.push(text);
+        quill.addText(this.users.get(sender).note, text);
         break;
 
       default:
@@ -217,7 +237,8 @@ class FacebookBot {
         this.users.get(sender).currentState = 'create-note';
         this.users.get(sender).note = {
           title: null,
-          body: []
+          body: { ops: [] },
+          text: ''
         };
         this.sendTextMessage(sender, "Start typing your notes. Type \'DONE\' when you are finished.");
         break;
